@@ -15,6 +15,8 @@ int main()
 {
 	string a("Hello it's test text");
 	map<char, int> myMap;
+	myMap['c'] = 5;
+	cout << myMap['c'];
 	
 	for (int i = 0; i < a.length(); i++)
 	{
