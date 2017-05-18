@@ -33,7 +33,7 @@ public:
 	Huffman() {}
 	Huffman(int mode, char *t); //mode = 1 from file, mode = 0 text
 
-	void print_codes();
+	void print_codes(); //print symbol:code
 	void print_encoded();
 	void decode();
 	void print_tree();
@@ -44,14 +44,13 @@ private:
 	Node* root;
 	char * source_text;  //It may be either text or name of file
 protected:
-	void frequency(char * t);   //calculus and fill map<char, int>
 	void encode_text(char * t);
-	void encode_file(char * f);
+	void frequency_counting(char * f);//calculus and fill map<char, int>
 	void create_tree();
-	void print_helper(Node* root, unsigned int k);
+	void print_helper(Node* root, unsigned int k); //print tree
 
-	void BuildTable(Node * ptr);
-	std::map<char, std::string> table;
+	void create_codes(Node * ptr);  //filling table (symbol:code)
+	std::map<char, std::string> table;	//char and huff.code for him
 	std::string code = "";
 };
 

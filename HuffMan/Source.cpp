@@ -7,7 +7,7 @@ using namespace std;
 int main()
 {
 	//Huffman a(0, /*"Helloooooo beep"*/ "itismystriiiiing!!!!");
-	Huffman b(1, "1.doc");
+	Huffman b(1, "1.txt");
 	b.encode();
 	b.decode();
 

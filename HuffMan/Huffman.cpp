@@ -7,7 +7,7 @@ Huffman::Huffman(int mode, char* t)
 	source_text = t;  
 	if (mode)
 	{
-		encode_file(t);
+		frequency_counting(t);
 	}
 	else
 	{
@@ -22,20 +22,17 @@ Huffman::Huffman(int mode, char* t)
 	}
 }
 
-void Huffman::frequency(char * t)
+
+
+void Huffman::encode_text(char * t)
 {
 	while (*t != NULL)
 	{
 		symbols_frequency[*t]++;
 		t++;
 	}
-}
-
-void Huffman::encode_text(char * t)
-{
-	frequency(t);
 	create_tree();
-	BuildTable(root);
+	create_codes(root);
 }
 
 struct compare_list
@@ -50,13 +47,18 @@ void Huffman::create_tree()
 	//	m.insert(std::make_pair(it->second, it->first));
 
 
-	std::list<Node*> t;  //filling the list
+	std::list<Node*> t;  //filling the list with nodes
 	for (auto it = symbols_frequency.begin(); it != symbols_frequency.end(); ++it)
 	{
 		Node *p = new Node;
 		p->c = it->first;
 		p->a = it->second;
 		t.push_back(p);
+	}
+	if (t.size() == 1)
+	{
+		root = t.front();
+		return;
 	}
 
 	while (t.size() != 1)
@@ -75,25 +77,22 @@ void Huffman::create_tree()
 	root = new Node(t.front()->left, t.front()->right);
 }
 
-void Huffman::BuildTable(Node *ptr)
+void Huffman::create_codes(Node *ptr)
 {
 	if (ptr->left != NULL)
 	{
 		code+="0";
-		BuildTable(ptr->left);
+		create_codes(ptr->left);
 	}
 
 	if (ptr->right != NULL)
 	{
 		code += "1";
-		BuildTable(ptr->right);
+		create_codes(ptr->right);
 	}
 
 	if (ptr->c) table[ptr->c] = code;
 
-
-	//if (code.size() != 0)
-		//code.pop_back();
 	if (code.size() != 0)
 	code.erase(code.size() - 1, 1);
 }
@@ -121,10 +120,6 @@ void Huffman::print_codes()
 		for (auto it = table.begin(); it != table.end(); ++it)
 		{
 			std::cout << it->first << " | "<<it->second;
-			/*for (auto itr = it->second.begin(); itr != it->second.end(); itr++)
-			{
-				std::cout << *itr;
-			}*/
 			std::cout << std::endl;
 		}
 }
@@ -151,7 +146,7 @@ void Huffman::print_tree()
 	print_helper(root);
 }
 
-void Huffman::encode_file(char * f)
+void Huffman::frequency_counting(char * f)  //it fill symbols_frequency map, create tree and fill table of codes
 {
 	std::ifstream file(f, std::ifstream::binary);
 	file.seekg(0, file.end);
@@ -163,12 +158,15 @@ void Huffman::encode_file(char * f)
 		file.read((char *)&tmp, sizeof(tmp));
 		++symbols_frequency[tmp];
 	}
-	create_tree();
-	BuildTable(root);
+		create_tree();
+		if (root->left != NULL && root->right != NULL)
+			create_codes(root);
+		else
+			table[root->c] = "1";
 	file.close();
 }
 
-void Huffman::encode()
+void Huffman::encode()   //encode source file and save to .huff file
 {
 
 	std::ifstream file(source_text, std::ifstream::binary); //SOURCE FILE
@@ -209,8 +207,33 @@ void Huffman::encode()
 
 void Huffman::decode()
 {
+
 	std::ifstream F(std::string(source_text)+".huff", std::ios::in | std::ios::binary);  //(source_text)+".huff" if encoded file which need to decode
 	std::ofstream dec(std::string(source_text) + ".decoded", std::ios::out | std::ios::binary); //for saving after decode
+																							
+																								
+	/*ÊÎÑÒÛËÜ*/
+	if (!root->left && !root->right)
+	{
+		int count = 0;
+		char tmp = F.get();
+		while (!F.eof())
+		{
+			bool b = tmp & (1 << (7 - count));
+			if(b) dec << root->c;
+			count++;
+			if (count == 8)
+			{
+				count = 0;
+				tmp = F.get();
+			}
+		}
+
+		return
+		F.close();
+		dec.close();
+	}
+	
 
 	Node *p = root;
 	int count = 0; char byte;
