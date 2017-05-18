@@ -209,5 +209,30 @@ void Huffman::encode()
 
 void Huffman::decode()
 {
+	std::ifstream F(std::string(source_text)+".huff", std::ios::in | std::ios::binary);  //(source_text)+".huff" if encoded file which need to decode
+	std::ofstream dec(std::string(source_text) + ".decoded", std::ios::out | std::ios::binary); //for saving after decode
 
+	Node *p = root;
+	int count = 0; char byte;
+	byte = F.get();
+	while (!F.eof())
+	{
+		bool b = byte & (1 << (7 - count));
+		if (b) p = p->right; else p = p->left;
+		if (p->left == NULL && p->right == NULL)
+		{
+			dec << p->c;
+			std::cout<<p->c;
+			p = root; 
+		}
+		count++;
+		if (count == 8)
+		{
+			count = 0;
+			byte = F.get();
+		}
+	}
+
+	F.close();
+	dec.close();
 }
